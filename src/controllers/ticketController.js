@@ -1,16 +1,19 @@
+// Controller for ticket status and purchase requests.
 const ticketService = require('../services/ticketService');
 
-async function getTickets(req, res) {
-	const result = await ticketService.getTickets();
+// Get ticket status data and send the service response.
+async function getTicketStatus(req, res) {
+	const result = await ticketService.getTicketStatus();
 	return res.status(result.statusCode).json(result.payload);
 }
 
-async function createTicket(req, res) {
-	const result = await ticketService.createTicket(req.body);
+// Purchase a ticket and return the service response.
+async function purchaseTicket(req, res) {
+	const result = await ticketService.purchaseTicket(req.body);
 	return res.status(result.statusCode).json(result.payload);
 }
 
 module.exports = {
-	getTickets,
-	createTicket,
+	getTicketStatus,
+	purchaseTicket,
 };

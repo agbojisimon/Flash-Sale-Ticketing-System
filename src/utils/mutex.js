@@ -1,9 +1,12 @@
+// Lightweight in-memory mutex registry for serializing critical sections.
 class Mutex {
+  // Create a mutex with a locked state and waiting queue.
   constructor() {
     this.locked = false;
     this.waiters = [];
   }
 
+  // Acquire the lock and receive a release callback.
   acquire() {
     if (!this.locked) {
       this.locked = true;
@@ -15,6 +18,7 @@ class Mutex {
     });
   }
 
+  // Release the lock and wake the next waiter, if any.
   release() {
     const nextWaiter = this.waiters.shift();
 
@@ -26,6 +30,7 @@ class Mutex {
     this.locked = false;
   }
 
+  // Run a callback exclusively while holding the lock.
   async runExclusive(callback) {
     const release = await this.acquire();
 
@@ -39,6 +44,7 @@ class Mutex {
 
 const mutexes = new Map();
 
+// Return a shared mutex instance for the provided key.
 function getMutex(key) {
   if (!mutexes.has(key)) {
     mutexes.set(key, new Mutex());

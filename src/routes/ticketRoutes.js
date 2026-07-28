@@ -1,11 +1,14 @@
+// Ticket API routes for status and purchase actions.
 const express = require('express');
 const ticketController = require('../controllers/ticketController');
 const idempotencyKey = require('../middlewares/idempotencyKey');
 
 const router = express.Router();
 
-router.get('/status', ticketController.getTickets);
+// GET /api/tickets/status returns ticket status data.
+router.get('/status', ticketController.getTicketStatus);
 
-router.post('/purchase', idempotencyKey, ticketController.createTicket);
+// POST /api/tickets/purchase creates or reuses a ticket purchase.
+router.post('/purchase', idempotencyKey, ticketController.purchaseTicket);
 
 module.exports = router;

@@ -1,9 +1,11 @@
+// Ticket service with purchase logic, idempotency, and stock safety.
 const mongoose = require('mongoose');
 const Order = require('../models/order');
 const Event = require('../models/event');
 const { getMutex } = require('../utils/mutex');
 
-async function getTickets() {
+// Return all ticket records and their current status.
+async function getTicketStatus() {
   try {
     const tickets = await Order.find();
 
@@ -26,9 +28,11 @@ async function getTickets() {
   }
 }
 
-async function createTicket(ticketData) {
+// Purchase a ticket, prevent overselling, and preserve idempotency.
+async function purchaseTicket(ticketData) {
   const { userId, eventId, idempotencyKey, status } = ticketData;
 
+  // Validate ObjectIds before any database operation.
   if (!mongoose.isValidObjectId(userId) || !mongoose.isValidObjectId(eventId)) {
     return {
       statusCode: 400,
@@ -40,6 +44,7 @@ async function createTicket(ticketData) {
 
   try {
     return await eventMutex.runExclusive(async () => {
+      // Load the event and confirm tickets are still available.
       const event = await Event.findById(eventId);
 
       if (!event) {
@@ -56,10 +61,12 @@ async function createTicket(ticketData) {
         };
       }
 
+      // Reserve one ticket before creating the order.
       event.availableTickets -= 1;
       await event.save();
 
       try {
+        // Create the order for the confirmed purchase.
         const ticket = await Order.create({
           userId,
           eventId,
@@ -72,6 +79,7 @@ async function createTicket(ticketData) {
           payload: ticket,
         };
       } catch (error) {
+        // Restore availability if order creation fails.
         event.availableTickets += 1;
         await event.save();
 
@@ -101,6 +109,6 @@ async function createTicket(ticketData) {
 }
 
 module.exports = {
-  getTickets,
-  createTicket,
+  getTicketStatus,
+  purchaseTicket,
 };

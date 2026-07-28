@@ -1,5 +1,7 @@
+// Event service for listing and creating event records.
 const Event = require('../models/event');
 
+// Return all stored events.
 async function getEvents() {
   try {
     const events = await Event.find();
@@ -23,9 +25,11 @@ async function getEvents() {
   }
 }
 
+// Create a new event record from the request payload.
 async function createEvent(eventData) {
   const { name, totalTickets, availableTickets } = eventData;
 
+  // Validate required event fields before writing to the database.
   if (!name || totalTickets === undefined || availableTickets === undefined) {
     return {
       statusCode: 400,
@@ -48,6 +52,7 @@ async function createEvent(eventData) {
   }
 
   try {
+    // Store the event with normalized ticket counts.
     const event = await Event.create({
       name: name.trim(),
       totalTickets: Number(totalTickets),

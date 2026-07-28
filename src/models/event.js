@@ -1,5 +1,7 @@
+// Event schema for event metadata and ticket availability.
 const mongoose = require('mongoose');
 
+// Store event name, total tickets, and remaining tickets.
 const eventSchema = new mongoose.Schema(
   {
     name: {

@@ -1,5 +1,7 @@
+// Order schema for ticket purchases and idempotency tracking.
 const mongoose = require('mongoose');
 
+// Store the user, event, unique request key, and order status.
 const orderSchema = new mongoose.Schema(
   {
     userId: {

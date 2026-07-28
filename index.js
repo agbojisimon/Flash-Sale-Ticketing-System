@@ -1,30 +1,30 @@
-//Import express and create an instance of the app
+// Main Express application entry point.
 const express = require('express');
 const app = express();
 
-//Server port
+// Server port.
 const Port = process.env.PORT || 5000;
 
-//Database connection
+// Database connection setup.
 const connectToDatabase = require('./db/connection');
 
-//Shared mutex registry
+// Shared mutex registry for concurrency control.
 require('./src/utils/mutex');
 
-//Middlewares
+// Global middleware registration.
 const logger = require('./src/middlewares/logger');
 
-//the ticket routes
+// Ticket routes.
 const ticketRoutes = require('./src/routes/ticketRoutes');
 
-//the event routes
+// Event routes.
 const eventRoutes = require('./src/routes/eventRoutes');
 
-//Middleware to parse JSON request bodies
+// Parse JSON request bodies and log incoming requests.
 app.use(express.json());
 app.use(logger);
 
-//Home page route
+// Basic health check route.
 app.get('/', (req, res) => {
   res.send('Hello World');
 });
@@ -34,6 +34,7 @@ app.use('/api/events', eventRoutes);
 
 async function startServer() {
   try {
+    // Wait for MongoDB before accepting requests.
     await connectToDatabase;
 
     app.listen(Port, () => {

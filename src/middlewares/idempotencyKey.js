@@ -1,6 +1,8 @@
+// Idempotency middleware for ticket purchase requests.
 const Order = require('../models/order');
 const { getMutex } = require('../utils/mutex');
 
+// Return an existing order when the same idempotency key is reused.
 async function idempotencyKey(req, res, next) {
 	if (req.method !== 'POST') {
 		return next();
@@ -12,6 +14,7 @@ async function idempotencyKey(req, res, next) {
 		return res.status(400).json({ message: 'idempotencyKey is required' });
 	}
 
+    // Lock by idempotency key so duplicate requests do not race.
 	const mutex = getMutex(`idempotency:${idempotencyKey}`);
 	const release = await mutex.acquire();
 	let released = false;
@@ -26,6 +29,7 @@ async function idempotencyKey(req, res, next) {
 	};
 
 	try {
+		// Check whether the purchase already exists for this key.
 		const existingOrder = await Order.findOne({ idempotencyKey });
 
 		if (existingOrder) {
